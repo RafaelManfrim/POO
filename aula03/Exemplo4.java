@@ -36,5 +36,7 @@ public class Exemplo4 {
     if (number1 >= number2) {
       System.out.printf("%d >= %d%n", number1, number2);
     }
+
+    input.close();
   }
 }

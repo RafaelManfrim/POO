@@ -9,5 +9,6 @@ public class GradeBookTest {
     System.out.print("Enter the course name: ");
     String courseName = scanner.nextLine();
     myGradeBook.displayMessage(courseName);
+    scanner.close();
   }
 }

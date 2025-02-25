@@ -11,5 +11,7 @@ public class GradeBookTest {
     GradeBook myGradeBook = new GradeBook(courseName);
 
     myGradeBook.displayMessage();
+
+    scanner.close();
   }
 }
