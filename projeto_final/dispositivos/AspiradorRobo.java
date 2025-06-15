@@ -8,7 +8,7 @@ import projeto_final.Estado;
 import projeto_final.Ambiente;
 
 public class AspiradorRobo extends Dispositivo {
-  private static final int TEMPO_LIMPEZA_PADRAO = 1; // minutos
+  private static final int TEMPO_LIMPEZA_PADRAO = 30; // minutos
   private LocalTime horaLimpezaIniciada;
   private int tempoLimpeza; // em minutos
 

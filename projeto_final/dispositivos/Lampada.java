@@ -22,6 +22,20 @@ public class Lampada extends Dispositivo {
         return "Lâmpada";
     }
 
+    @Override
+    public void ligar() {
+        super.ligar();
+        if (brilho == 0) {
+            ajustarBrilho(50);
+        }
+    }
+
+    @Override
+    public void desligar() {
+        super.desligar();
+        ajustarBrilho(0);
+    }
+
     public void ajustarBrilho(int brilho) {
         if (brilho < 0 || brilho > 100) {
             throw new IllegalArgumentException("O brilho deve estar entre 0% e 100%");
@@ -41,6 +55,6 @@ public class Lampada extends Dispositivo {
 
     @Override
     public String getEstado() {
-        return isLigado() ? "Ligada (" + brilho + "%)" : "Desligada";
+        return isLigado() ? "Ligada (" + brilho + "% de brilho)" : "Desligada";
     }
 }
