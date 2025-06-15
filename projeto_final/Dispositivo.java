@@ -1,9 +1,9 @@
 package projeto_final;
 
 public abstract class Dispositivo {
-    private String nome;
-    private String ambiente;
-    private Estado estado;
+    protected String nome;
+    protected String ambiente;
+    protected Estado estado;
 
     public Dispositivo(String nome, String ambiente) {
         this.nome = nome;

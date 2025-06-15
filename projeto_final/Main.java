@@ -2,6 +2,7 @@ package projeto_final;
 
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.List;
 
 import projeto_final.dispositivos.Lampada;
 import projeto_final.dispositivos.ArCondicionado;
@@ -118,22 +119,22 @@ public class Main {
       System.out.print("Digite o número do ambiente a ser removido: ");
       int indice = capturarOpcao(1, ambientes.size()) - 1;
 
-      // Verificar se o ambiente tem dispositivos associados
-      // boolean temDispositivos = false;
-      // for (Dispositivo d : dispositivos) {
-      //     if (d.getAmbiente().equals(ambientes.get(indice).getNome())) {
-      //         temDispositivos = true;
-      //         break;
-      //     }
-      // }
+      System.out.println("\nVocê está prestes a remover o ambiente (Todos os dispositivos nele serão excluídos): " + ambientes.get(indice).getNome());
+      System.out.print("Tem certeza? (s/n): ");
+      String confirmacao = scanner.nextLine().trim().toLowerCase();
+      if (!confirmacao.toLowerCase().equals("s")) {
+          System.out.println("Remoção cancelada.");
+          return;
+      }
 
-      // if (temDispositivos) {
-      //     System.out.println("Este ambiente contém dispositivos. Remova os dispositivos primeiro.");
-      //     return;
-      // }
+      Ambiente ambienteRemovido = ambientes.get(indice);
 
-      // String nomeRemovido = ambientes.remove(indice).getNome();
-      // System.out.println("Ambiente '" + nomeRemovido + "' removido com sucesso!");
+      for (Dispositivo dispositivo : ambienteRemovido.getDispositivos()) {
+        dispositivos.remove(dispositivo);
+      }
+
+      String nomeRemovido = ambientes.remove(indice).getNome();
+      System.out.println("Ambiente '" + nomeRemovido + "' removido com sucesso!");
   }
 
   private static void listarAmbientes() {
@@ -196,7 +197,7 @@ public class Main {
       System.out.println("6. Genérico");
 
       System.out.print("Selecione o tipo de dispositivo: ");
-      int tipo = capturarOpcao(1, 3);
+      int tipo = capturarOpcao(1, 6);
 
       System.out.print("Digite o nome do dispositivo: ");
       String nome = scanner.nextLine();
@@ -208,32 +209,34 @@ public class Main {
 
       System.out.print("Selecione o ambiente para o dispositivo: ");
       int indiceAmbiente = capturarOpcao(1, ambientes.size()) - 1;
-      String ambiente = ambientes.get(indiceAmbiente).getNome();
+      String nomeAmbiente = ambientes.get(indiceAmbiente).getNome();
 
       Dispositivo dispositivo = null;
       switch (tipo) {
           case 1:
-              dispositivo = new Lampada(nome, ambiente);
+              dispositivo = new Lampada(nome, nomeAmbiente);
               break;
           case 2:
-              dispositivo = new ArCondicionado(nome, ambiente);
+              dispositivo = new ArCondicionado(nome, nomeAmbiente);
               break;
           case 3:
-              dispositivo = new AspiradorRobo(nome, ambiente);
+              dispositivo = new AspiradorRobo(nome, nomeAmbiente);
               break;
           case 4:
-              dispositivo = new AssistenteVirtual(nome, ambiente);
+              dispositivo = new AssistenteVirtual(nome, nomeAmbiente);
               break;
           case 5:
-              dispositivo = new CameraDeSeguranca(nome, ambiente);
+              dispositivo = new CameraDeSeguranca(nome, nomeAmbiente);
               break;
           case 6:
-              dispositivo = new DispositivoGenerico(nome, ambiente);
+              dispositivo = new DispositivoGenerico(nome, nomeAmbiente);
               break;
       }
 
+      ambientes.get(indiceAmbiente).adicionarDispositivo(dispositivo);
+
       dispositivos.add(dispositivo);
-      System.out.println("Dispositivo '" + nome + "' adicionado com sucesso ao ambiente '" + ambiente + "'!");
+      System.out.println("Dispositivo '" + nome + "' adicionado com sucesso ao ambiente '" + nomeAmbiente + "'!");
   }
 
   private static void removerDispositivo() {
@@ -253,6 +256,16 @@ public class Main {
     int indice = capturarOpcao(1, dispositivos.size()) - 1;
 
     String nomeRemovido = dispositivos.remove(indice).getNome();
+
+    // Remover o dispositivo do ambiente correspondente
+    String nomeAmbiente = dispositivos.get(indice).getAmbiente();
+    for (Ambiente ambiente : ambientes) {
+      if (ambiente.getNome().equals(nomeAmbiente)) {
+        ambiente.removerDispositivo(dispositivos.get(indice));
+        break;
+      }
+    }
+
     System.out.println("Dispositivo '" + nomeRemovido + "' removido com sucesso!");
   }
 
@@ -295,17 +308,15 @@ public class Main {
       System.out.println("\nDispositivos por ambiente:");
       for (Ambiente ambiente : ambientes) {
           System.out.println("\nAmbiente: " + ambiente.getNome());
-          boolean temDispositivos = false;
-          
-          for (Dispositivo d : dispositivos) {
-              if (d.getAmbiente().equals(ambiente.getNome())) {
-                  System.out.println("- " + d.getNome() + " (" + d.getTipo() + "): " + d.getEstado());
-                  temDispositivos = true;
-              }
-          }
-          
-          if (!temDispositivos) {
+          // Listar dispositivos associados a este ambiente
+          List<Dispositivo> dispositivosAmbiente = ambiente.getDispositivos();
+          if (dispositivosAmbiente.isEmpty()) {
               System.out.println("- Nenhum dispositivo neste ambiente");
+              continue;
+          }
+
+          for (Dispositivo d : dispositivosAmbiente) {
+              System.out.println("- " + d.getNome() + " (" + d.getTipo() + "): " + d.getEstado());
           }
       }
   }
@@ -378,52 +389,144 @@ public class Main {
   }
 
   private static void controlarArCondicionado(ArCondicionado ar) {
-      System.out.println("\nOpções para ar condicionado:");
-      System.out.println("1. Ligar");
-      System.out.println("2. Desligar");
-      System.out.println("3. Ajustar temperatura");
-      System.out.println("4. Voltar");
+    System.out.println("\nOpções para ar condicionado:");
+    System.out.println("1. Ligar");
+    System.out.println("2. Desligar");
+    System.out.println("3. Ajustar temperatura");
+    System.out.println("4. Voltar");
 
-      int opcao = capturarOpcao(1, 4);
+    int opcao = capturarOpcao(1, 4);
 
-      switch (opcao) {
-          case 1:
-              ar.ligar();
-              System.out.println("Ar condicionado ligado.");
-              break;
-          case 2:
-              ar.desligar();
-              System.out.println("Ar condicionado desligado.");
-              break;
-          case 3:
-              System.out.print("Digite a temperatura desejada (16-30°C): ");
-              int temperatura = capturarOpcao(16, 30);
-              ar.ajustarTemperatura(temperatura);
-              System.out.println("Temperatura ajustada para " + temperatura + "°C");
-              break;
-          case 4:
-              return;
-      }
+    switch (opcao) {
+      case 1:
+        ar.ligar();
+        System.out.println("Ar condicionado ligado.");
+        break;
+      case 2:
+        ar.desligar();
+        System.out.println("Ar condicionado desligado.");
+        break;
+      case 3:
+        System.out.print("Digite a temperatura desejada (16-30°C): ");
+        int temperatura = capturarOpcao(16, 30);
+        ar.ajustarTemperatura(temperatura);
+        System.out.println("Temperatura ajustada para " + temperatura + "°C");
+        break;
+      case 4:
+        return;
+    }
   }
 
   private static void controlarAspiradorRobo(AspiradorRobo aspirador) {
-      // Implementar controle para Aspirador Robô
-      System.out.println("Controle de Aspirador Robô ainda não implementado.");
+    System.out.println("\nOpções para aspirador robô:");
+    System.out.println("1. Ligar");
+    System.out.println("2. Desligar");
+    System.out.println("3. Configurar tempo de limpeza");
+    System.out.println("4. Voltar");
+
+    int opcao = capturarOpcao(1, 4);
+
+    switch (opcao) {
+      case 1:
+        aspirador.ligar();
+        System.out.println("Aspirador robô ligado.");
+        break;
+      case 2:
+        aspirador.desligar();
+        System.out.println("Aspirador robô desligado.");
+        break;
+      case 3:
+        System.out.print("Digite o tempo em minutos (10-120): ");
+        int tempo = capturarOpcao(10, 120);
+        aspirador.configurarTempoLimpeza(tempo);
+        System.out.println("Tempo de limpeza ajustado para " + tempo + " minutos.");
+        break;
+      case 4:
+        return;
+    }
   }
 
   private static void controlarAssistenteVirtual(AssistenteVirtual assistente) {
-      // Implementar controle para Assistente Virtual
-      System.out.println("Controle de Assistente Virtual ainda não implementado.");
+    System.out.println("\nOpções para assistente virtual:");
+    System.out.println("1. Ligar");
+    System.out.println("2. Desligar");
+    System.out.println("3. Tocar Música");
+    System.out.println("4. Voltar");
+
+    int opcao = capturarOpcao(1, 4);
+
+    switch (opcao) {
+      case 1:
+        assistente.ligar();
+        System.out.println("Assistente virtual ligada.");
+        break;
+      case 2:
+        assistente.desligar();
+        System.out.println("Assistente virtual desligada.");
+        break;
+      case 3:
+        System.out.print("Digite o nome da música: ");
+        String musica = scanner.nextLine();
+        assistente.tocarMusica(musica);
+        System.out.println("Tocando música: " + musica);
+        break;
+      case 4:
+        return;
+    }
   }
 
   private static void controlarCameraDeSeguranca(CameraDeSeguranca camera) {
-      // Implementar controle para Câmera de Segurança
-      System.out.println("Controle de Câmera de Segurança ainda não implementado.");
+    System.out.println("\nOpções para Camera de Segurança:");
+    System.out.println("1. Ligar");
+    System.out.println("2. Desligar");
+    System.out.println("3. Gravar na Memória");
+    System.out.println("4. Parar Gravação");
+    System.out.println("5. Voltar");
+
+    int opcao = capturarOpcao(1, 5);
+
+    switch (opcao) {
+      case 1:
+        camera.ligar();
+        System.out.println("Câmera de segurança ligada.");
+        break;
+      case 2:
+        camera.desligar();
+        System.out.println("Câmera de segurança desligada.");
+        break;
+      case 3:
+        camera.iniciarGravacao();
+        System.out.println("Câmera de segurança iniciando gravação na memória.");
+        break;
+      case 4:
+        camera.pararGravacao();
+        System.out.println("Câmera de segurança parando gravação na memória.");
+        break;
+      case 5:
+        return;
+    }
   }
 
   private static void controlarDispositivoGenerico(Dispositivo dispositivo) {
-      // Implementar controle genérico
-      System.out.println("Controle genérico não implementado.");
+    System.out.println("\nOpções para dispositivo genérico:");
+    System.out.println("1. Ligar");
+    System.out.println("2. Desligar");
+    System.out.println("3. Voltar");
+
+    int opcao = capturarOpcao(1, 3);
+
+    switch (opcao) {
+      case 1:
+        dispositivo.ligar();
+        System.out.println("Dispositivo genérico ligado.");
+        break;
+      case 2:
+        dispositivo.desligar();
+        System.out.println("Dispositivo genérico desligado.");
+        break;
+      case 3:
+        return;
+    }
   }
 
 }
